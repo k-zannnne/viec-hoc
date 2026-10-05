@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Việc Học Của Tôi - Task Management App
 
-## Getting Started
+Ứng dụng web quản lý công việc học tập cá nhân (Fullstack TodoApp) được xây dựng bằng **Next.js (App Router)**, **Supabase Auth & Database**, **Tailwind CSS** và **Zod**.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Thông Tin Nộp Bài & Triển Khai
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+* **URL Vercel (Production):** [https://viec-hoc-nine.vercel.app](https://viec-hoc-nine.vercel.app)
+* **GitHub Repository:** [https://github.com/k-zannnne/viec-hoc](https://github.com/k-zannnne/viec-hoc)
+* **Tài khoản thử nghiệm sẵn (Test Accounts):**
+  * **User A:** `usera@gmail.com` | Mật khẩu: `123456`
+  * **User B:** `userb@gmail.com` | Mật khẩu: `123456`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Yêu Cầu Tiền Đề (Prerequisites)
 
-## Learn More
+Trước khi bắt đầu cài đặt, hãy đảm bảo máy tính của bạn đã cài đặt các công cụ sau:
+* **Node.js**: Phiên bản `18.x` hoặc `20.x` trở lên ([Tải tại đây](https://nodejs.org/))
+* **Git**: Dùng để clone repository ([Tải tại đây](https://git-scm.com/))
+* **Tài khoản Supabase**: Để khởi tạo Database và Auth ([Trang chủ Supabase](https://supabase.com/))
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Hướng Dẫn Tạo Database & Cấu Hình Supabase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Nếu bạn muốn tự thiết lập Cơ sở dữ liệu riêng trên dự án Supabase mới, hãy làm theo các bước sau:
 
-## Deploy on Vercel
+1. **Tạo dự án mới trên Supabase:**
+   * Đăng nhập vào [Supabase Dashboard](https://supabase.com/dashboard).
+   * Bấm **New Project**, nhập tên dự án và mật khẩu Database, chọn khu vực gần nhất (ví dụ: Singapore) và bấm **Create new project**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Khởi tạo Bảng & Bật chính sách Bảo mật RLS:**
+   * Mở mục **SQL Editor** ở thanh menu bên trái của Supabase Dashboard.
+   * Tạo một truy vấn mới (New Query), dán toàn bộ đoạn mã SQL dưới đây và bấm **Run**:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```sql
+-- 1. Tạo bảng tasks lưu trữ công việc học tập
+create table public.tasks (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  title text not null,
+  is_done boolean default false not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 2. Bật tính năng Row Level Security (RLS) để cách ly dữ liệu
+alter table public.tasks enable row level security;
+
+-- 3. Tạo chính sách bảo mật cho phép người dùng quản lý đúng dữ liệu của chính họ
+create policy "Users can manage their own tasks"
+  on public.tasks
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
