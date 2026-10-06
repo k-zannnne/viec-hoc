@@ -4,7 +4,7 @@
 
 ---
 
-## Thông Tin Nộp Bài & Triển Khai
+## Thông Tin & Triển Khai
 
 * **URL Vercel (Production):** [https://viec-hoc-nine.vercel.app](https://viec-hoc-nine.vercel.app)
 * **GitHub Repository:** [https://github.com/k-zannnne/viec-hoc](https://github.com/k-zannnne/viec-hoc)
